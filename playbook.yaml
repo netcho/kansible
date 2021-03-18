@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+  gather_facts: false
+  vars:
+    os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE')}}"
+  tasks:
+    - stat:
+        path: "{{ os_config_file_path }}"
+      register: os_config_file
+    - include_vars: "{{ os_config_file_path }}"
+      when: os_config_file.stat.exists and os_config_file.stat.isreg
+    - name: "Print out clouds variable"
+      debug:
+        msg: "{{ clouds|default('No clouds found') }}"
+    - name: deploy kubernetes master
+      openstack.cloud.server:
+        name: kubernetes-master
+        state: present
+
