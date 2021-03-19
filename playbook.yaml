@@ -6,34 +6,34 @@
     kubernetes_cluster_name: "test1"
     kubernetes_cluster_network: "mafiarpg-default"
     kubernetes_cluster_floating_ip_network: "provider"
-    kubernetes_node_keypair_name: "kaloyan-dell"
     kubernetes_master_flavor_name: "m1.large"
     kubernetes_master_volume_name: "{{ (kubernetes_cluster_name + '-kubernetes-master-volume') | to_uuid }}"
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
-    #- debug:
-    #    msg: "{{ os_config_file_path }}"
     - stat:
         path: "{{ os_config_file_path }}"
       register: os_config_file
     - include_vars: "{{ os_config_file_path }}"
       when: os_config_file.stat.exists and os_config_file.stat.isreg
-    #- name: "Print out clouds variable"
-    #  debug:
-    #    msg: "{{ clouds|default('No clouds found') }}"
+    - name: generate keypair
+      openstack.cloud.keypair:
+        name: "{{ (kubernetes_cluster_name + '-keypair') }}"
+        auth: "{{ clouds.devstack.auth }}"
+      when: keypair_name is undefined
+    - name: set keypair_name value
+      set_fact:
+        keypair_name: "{{ (kubernetes_cluster_name + '-keypair') }}"
+      when: keypair_name is undefined
+    - name: get keypair
+      openstack.cloud.keypair_info:
+        name: "{{ keypair_name }}"
+        auth: "{{ clouds.devstack.auth }}"
+      register: kubernetes_node_keypair
     - name: get flavor
       openstack.cloud.compute_flavor_info:
         auth: "{{ clouds.devstack.auth }}"
         name: "{{ kubernetes_master_flavor_name }}"
       register: kubernetes_master_flavor
-    - name: get keypair
-      openstack.cloud.keypair_info:
-        auth: "{{ clouds.devstack.auth }}"
-        name: "{{ kubernetes_node_keypair_name }}"
-      register: kubernetes_node_keypair
-    #- name: debug retrieved flavor
-    #  debug:
-    #    msg: "{{ kubernetes_master_flavor }}"
     - name: provision kubernetes master root volume
       openstack.cloud.volume:
         name: "{{ kubernetes_master_volume_name }}"
