@@ -6,7 +6,7 @@
     kubernetes_cluster_network: "mafiarpg-default"
     kubernetes_cluster_floating_ip_network: "provider"
     kubernetes_master_flavor_name: "m1.large"
-    kubernetes_master_volume_name: "{{ kubernetes-master-volume | to_uuid }}"
+    kubernetes_master_volume_name: "{{ 'kubernetes-master-volume' | to_uuid }}"
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
     - debug:
