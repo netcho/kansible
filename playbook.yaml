@@ -8,7 +8,7 @@
     kubernetes_cluster_floating_ip_network: "provider"
     kubernetes_node_keypair_name: "kaloyan-dell"
     kubernetes_master_flavor_name: "m1.large"
-    kubernetes_master_volume_name: "{{ '-'.join(kubernetes_cluster_name, 'kubernetes-master-volume') | to_uuid }}"
+    kubernetes_master_volume_name: "{{ (kubernetes_cluster_name + '-kubernetes-master-volume') | to_uuid }}"
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
     #- debug:
@@ -27,7 +27,7 @@
         name: "{{ kubernetes_master_flavor_name }}"
       register: kubernetes_master_flavor
     - name: get keypair
-      openstack.cloud.compute_flavor_info:
+      openstack.cloud.keypair_info:
         auth: "{{ clouds.devstack.auth }}"
         name: "{{ kubernetes_node_keypair_name }}"
       register: kubernetes_node_keypair
@@ -48,7 +48,7 @@
         kubernetes_node_userdata: "{{ lookup('template', 'userdata/flatcar.j2')}}"
     - name: provision kubernetes master node
       openstack.cloud.server:
-        name: "{{ '-'.join(kubernetes_cluster_name, 'kubernetes-master-node') }}"
+        name: "{{ (kubernetes_cluster_name + '-kubernetes-master-volume') }}"
         state: present
         auth: "{{ clouds.devstack.auth }}"
         flavor: "{{ kubernetes_master_flavor_name }}"
