@@ -52,8 +52,7 @@
         state: present
         auth: "{{ clouds.devstack.auth }}"
         flavor: "{{ kubernetes_master_flavor_name }}"
-        volumes:
-          - "{{ kubernetes_master_volume_name }}"
+        boot_volume: "{{ kubernetes_master_volume_name }}"
         network: "{{ kubernetes_cluster_network }}"
         floating_ip_pools:
           - "{{ kubernetes_cluster_floating_ip_network }}"
