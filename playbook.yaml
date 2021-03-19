@@ -48,11 +48,11 @@
         kubernetes_node_userdata: "{{ lookup('template', 'userdata/flatcar.j2')}}"
     - name: provision kubernetes master node
       openstack.cloud.server:
-        name: "{{ (kubernetes_cluster_name + '-kubernetes-master-volume') }}"
+        name: "{{ (kubernetes_cluster_name + '-kubernetes-master') }}"
         state: present
         auth: "{{ clouds.devstack.auth }}"
         flavor: "{{ kubernetes_master_flavor_name }}"
-        volume:
+        volumes:
           - "{{ kubernetes_master_volume_name }}"
         network: "{{ kubernetes_cluster_network }}"
         floating_ip_pools:
