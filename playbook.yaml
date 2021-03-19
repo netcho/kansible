@@ -24,17 +24,17 @@
         auth: "{{ clouds.devstack.auth }}"
         name: "{{ kubernetes_master_flavor_name }}"
       register: kubernetes_master_flavor
-    - name: debug retrieved flavor
-      debug:
-        msg: "{{ kubernetes_master_flavor }}"
-    #- name: provision kubernetes master root volume
-    #  openstack.cloud.volume:
-    #    name: "{{ kubernetes_master_volume_name }}"
-    #    state: present
-    #    auth: "{{ clouds.devstack.auth }}"
-    #    bootable: true
-    #    image: "{{ image }}"
-    #    size: "{{ kubernetes_master_flavor.openstack_flavors.size }}"
+    #- name: debug retrieved flavor
+    #  debug:
+    #    msg: "{{ kubernetes_master_flavor }}"
+    - name: provision kubernetes master root volume
+      openstack.cloud.volume:
+        name: "{{ kubernetes_master_volume_name }}"
+        state: present
+        auth: "{{ clouds.devstack.auth }}"
+        bootable: true
+        image: "{{ image }}"
+        size: "{{ kubernetes_master_flavor.openstack_flavors[0].disk }}"
     #- name: provision kubernetes master node
     #  openstack.cloud.server:
     #    name: kubernetes-master
