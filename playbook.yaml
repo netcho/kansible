@@ -21,7 +21,7 @@
         msg: "{{ clouds|default('No clouds found') }}"
     - name: get flavor disk size
       openstack.cloud.compute_flavor_info:
-        cloud: "{{ devstack }}"
+        cloud: "{{ clouds.devstack }}"
         name: "{{ kubernetes_master_flavor_name }}"
       register: kubernetes_master_flavor
     - name: provision kubernetes master root volume
@@ -32,6 +32,7 @@
         image: "{{ image }}"
     - name: provision kubernetes master node
       openstack.cloud.server:
+        cloud: "{{ clouds.devstack }}"
         name: kubernetes-master
         state: present
         flavor: "{{ kubernetes_master_flavor_name }}"
