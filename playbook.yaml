@@ -1,9 +1,11 @@
 ---
 - hosts: localhost
-  gather_facts: true
+  gather_facts: false
   vars:
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE')}}"
   tasks:
+    - debug:
+        msg: "{{ os_config_file_path }}"
     - stat:
         path: "{{ os_config_file_path }}"
       register: os_config_file
