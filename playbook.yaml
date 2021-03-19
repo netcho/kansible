@@ -3,22 +3,23 @@
   gather_facts: false
   vars:
     image: "flatcar"
+    kubernetes_cluster_name: "test1"
     kubernetes_cluster_network: "mafiarpg-default"
     kubernetes_cluster_floating_ip_network: "provider"
     kubernetes_master_flavor_name: "m1.large"
-    kubernetes_master_volume_name: "{{ 'kubernetes-master-volume' | to_uuid }}"
+    kubernetes_master_volume_name: "{{ '-'.join(kubernetes_cluster_name, 'kubernetes-master-volume') | to_uuid }}"
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
-    - debug:
-        msg: "{{ os_config_file_path }}"
+    #- debug:
+    #    msg: "{{ os_config_file_path }}"
     - stat:
         path: "{{ os_config_file_path }}"
       register: os_config_file
     - include_vars: "{{ os_config_file_path }}"
       when: os_config_file.stat.exists and os_config_file.stat.isreg
-    - name: "Print out clouds variable"
-      debug:
-        msg: "{{ clouds|default('No clouds found') }}"
+    #- name: "Print out clouds variable"
+    #  debug:
+    #    msg: "{{ clouds|default('No clouds found') }}"
     - name: get flavor disk size
       openstack.cloud.compute_flavor_info:
         auth: "{{ clouds.devstack.auth }}"
@@ -36,14 +37,14 @@
         image: "{{ image }}"
         size: "{{ kubernetes_master_flavor.openstack_flavors[0].disk }}"
         timeout: 720
-    #- name: provision kubernetes master node
-    #  openstack.cloud.server:
-    #    name: kubernetes-master
-    #    state: present
-    #    auth: "{{ clouds.devstack.auth }}"
-    #    flavor: "{{ kubernetes_master_flavor_name }}"
-    #    volume:
-    #      - "{{ kubernetes_master_volume_name }}"
-    #    network: "{{ kubernetes_cluster_network }}"
-    #    floating_ip_pools:
-    #      - "{{ kubernetes_cluster_floating_ip_network }}"
+    - name: provision kubernetes master node
+      openstack.cloud.server:
+        name: "{{ '-'.join(kubernetes_cluster_name, 'kubernetes-master-node') }}"
+        state: present
+        auth: "{{ clouds.devstack.auth }}"
+        flavor: "{{ kubernetes_master_flavor_name }}"
+        volume:
+          - "{{ kubernetes_master_volume_name }}"
+        network: "{{ kubernetes_cluster_network }}"
+        floating_ip_pools:
+          - "{{ kubernetes_cluster_floating_ip_network }}"
