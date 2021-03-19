@@ -31,6 +31,7 @@
         auth: "{{ clouds.devstack.auth }}"
         bootable: true
         image: "{{ image }}"
+        size: "{{ kubernetes_master_flavor.size }}"
     - name: provision kubernetes master node
       openstack.cloud.server:
         name: kubernetes-master
