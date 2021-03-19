@@ -6,6 +6,7 @@
     kubernetes_cluster_name: "test1"
     kubernetes_cluster_network: "mafiarpg-default"
     kubernetes_cluster_floating_ip_network: "provider"
+    kubernetes_node_keypair_name: "kaloyan-dell"
     kubernetes_master_flavor_name: "m1.large"
     kubernetes_master_volume_name: "{{ '-'.join(kubernetes_cluster_name, 'kubernetes-master-volume') | to_uuid }}"
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
@@ -20,11 +21,16 @@
     #- name: "Print out clouds variable"
     #  debug:
     #    msg: "{{ clouds|default('No clouds found') }}"
-    - name: get flavor disk size
+    - name: get flavor
       openstack.cloud.compute_flavor_info:
         auth: "{{ clouds.devstack.auth }}"
         name: "{{ kubernetes_master_flavor_name }}"
       register: kubernetes_master_flavor
+    - name: get keypair
+      openstack.cloud.compute_flavor_info:
+        auth: "{{ clouds.devstack.auth }}"
+        name: "{{ kubernetes_node_keypair_name }}"
+      register: kubernetes_node_keypair
     #- name: debug retrieved flavor
     #  debug:
     #    msg: "{{ kubernetes_master_flavor }}"
@@ -37,6 +43,9 @@
         image: "{{ image }}"
         size: "{{ kubernetes_master_flavor.openstack_flavors[0].disk }}"
         timeout: 720
+    - name: generate kubernetes master user-data
+      set_fact:
+        kubernetes_node_userdata: "{{ lookup('template', 'userdata/flatcar.j2')}}"
     - name: provision kubernetes master node
       openstack.cloud.server:
         name: "{{ '-'.join(kubernetes_cluster_name, 'kubernetes-master-node') }}"
@@ -48,3 +57,4 @@
         network: "{{ kubernetes_cluster_network }}"
         floating_ip_pools:
           - "{{ kubernetes_cluster_floating_ip_network }}"
+        userdata: "{{ kubernetes_node_userdata }}"
