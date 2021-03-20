@@ -19,16 +19,13 @@
       openstack.cloud.keypair:
         name: "{{ (kubernetes_cluster_name + '-keypair') }}"
         auth: "{{ clouds.devstack.auth }}"
-      when: keypair_name is undefined
-    - name: set keypair_name value
+      register: generated_keypair
+    - name: generate list of keypairs
       set_fact:
-        keypair_name: "{{ (kubernetes_cluster_name + '-keypair') }}"
-      when: keypair_name is undefined
-    - name: get keypair
-      openstack.cloud.keypair_info:
-        #name: "{{ keypair_name }}"
-        auth: "{{ clouds.devstack.auth }}"
-      register: kubernetes_node_keypair
+        kubernetes_node_keypairs: "{{ item }}"
+      with_items:
+        - "{{ generated_keypair }}"
+        - "{{ ssh_keypair }}"
     - name: get flavor
       openstack.cloud.compute_flavor_info:
         auth: "{{ clouds.devstack.auth }}"
