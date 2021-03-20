@@ -26,7 +26,7 @@
       when: keypair_name is undefined
     - name: get keypair
       openstack.cloud.keypair_info:
-        name: "{{ keypair_name }}"
+        #name: "{{ keypair_name }}"
         auth: "{{ clouds.devstack.auth }}"
       register: kubernetes_node_keypair
     - name: get flavor
