@@ -24,7 +24,7 @@
       set_fact:
         kubernetes_node_keypairs: "{{ item }}"
       with_items:
-        - "{{ generated_keypair }}"
+        - "{{ generated_keypair.key }}"
         - "{{ ssh_keypair }}"
     - name: get flavor
       openstack.cloud.compute_flavor_info:
