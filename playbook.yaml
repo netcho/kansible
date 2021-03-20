@@ -22,7 +22,7 @@
       register: generated_keypair
     - name: generate list of keypairs
       set_fact:
-        kubernetes_node_keypairs: "{{ item }}"
+        kubernetes_node_keypairs: "{{ item.public_key }}"
       with_items:
         - "{{ generated_keypair.key }}"
         - "{{ ssh_keypair }}"
