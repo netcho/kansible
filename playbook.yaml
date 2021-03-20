@@ -45,7 +45,7 @@
         timeout: 720
     - name: generate kubernetes master user-data
       set_fact:
-        kubernetes_node_userdata: "{{ lookup('template', 'userdata/flatcar.j2')}}"
+        kubernetes_node_userdata: "{{ lookup('template', 'userdata/flatcar.j2') | to_json }}"
     - name: provision kubernetes master node
       openstack.cloud.server:
         name: "{{ (kubernetes_cluster_name + '-kubernetes-master') }}"
