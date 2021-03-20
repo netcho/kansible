@@ -6,6 +6,7 @@
     kubernetes_cluster_name: "test1"
     kubernetes_cluster_network: "mafiarpg-default"
     kubernetes_cluster_floating_ip_network: "provider"
+    kubernetes_node_keypairs: []
     kubernetes_master_flavor_name: "m1.large"
     kubernetes_master_volume_name: "{{ (kubernetes_cluster_name + '-kubernetes-master-volume') | to_uuid }}"
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
@@ -22,7 +23,7 @@
       register: generated_keypair
     - name: generate list of keypairs
       set_fact:
-        kubernetes_node_keypairs: "{{ item.public_key }}"
+        kubernetes_node_keypairs: "{{ kubernetes_node_keypairs + [item.public_key] }}"
       with_items:
         - "{{ generated_keypair.key }}"
         - "{{ ssh_keypair }}"
