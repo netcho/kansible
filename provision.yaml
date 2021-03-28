@@ -69,30 +69,30 @@
         - name: Generate Kubernetes node user-data
           set_fact:
             userdata: "{{ lookup('template', 'userdata/flatcar.j2') }}"
-        - block:
-          - name: Create Kubernetes master data volume
-            openstack.cloud.volume:
-              name: "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
-              description: "{{ kubernetes_cluster_name + ' cluster master' + item + ' data volume' }}"
-              state: present
-              auth: "{{ clouds.devstack.auth }}"
-              size: "{{ kubernetes_master_volume_size | default('40') }}"
-          - name: Create Kubernetes master instance
-            openstack.cloud.server:
-              name: "{{ kubernetes_cluster_name + '-kubernetes-master' + item }}"
-              state: present
-              auth: "{{ clouds.devstack.auth }}"
-              flavor: "{{ kubernetes_master_flavor_name }}"
-              image: "{{ image }}"
-              network: "{{ kubernetes_cluster_network }}"
-              floating_ip_pools:
-                - "{{ kubernetes_cluster_floating_ip_network }}"
-              security_groups:
-                - default
-                - Kubernetes Master
-              volumes:
-                - "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
-              userdata: "{{ userdata | to_json }}"
+        - name: Create Kubernetes master data volume
+          openstack.cloud.volume:
+            name: "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
+            description: "{{ kubernetes_cluster_name + ' cluster master' + item + ' data volume' }}"
+            state: present
+            auth: "{{ clouds.devstack.auth }}"
+            size: "{{ kubernetes_master_volume_size | default('40') }}"
+          with_sequence: start=1 end="{{ kubernetes_master_count + 1}}"
+        - name: Create Kubernetes master instance
+          openstack.cloud.server:
+            name: "{{ kubernetes_cluster_name + '-kubernetes-master' + item }}"
+            state: present
+            auth: "{{ clouds.devstack.auth }}"
+            flavor: "{{ kubernetes_master_flavor_name }}"
+            image: "{{ image }}"
+            network: "{{ kubernetes_cluster_network }}"
+            floating_ip_pools:
+              - "{{ kubernetes_cluster_floating_ip_network }}"
+            security_groups:
+              - default
+              - Kubernetes Master
+            volumes:
+              - "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
+            userdata: "{{ userdata | to_json }}"
           with_sequence: start=1 end="{{ kubernetes_master_count + 1}}"
       vars:
         callback_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits') }}"
