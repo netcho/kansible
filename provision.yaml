@@ -93,8 +93,6 @@
                 - "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
               userdata: "{{ userdata | to_json }}"
           with_sequence: start=1 end="{{ kubernetes_master_count + 1}}"
-      poll: 3
-      async: 180
       vars:
         callback_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits') }}"
     - name: Provision Kubernetes nodes
