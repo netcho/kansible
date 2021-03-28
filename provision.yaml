@@ -64,7 +64,8 @@
             host_config_key: "{{ callback_key }}"
           register: job_template_reg
         - name: debug job template
-          debug: job_template_reg
+          debug:
+            msg: "Job template create result: {{ job_template_reg }}"
         - name: Generate Kubernetes node user-data
           set_fact:
             userdata: "{{ lookup('template', 'userdata/flatcar.j2') }}"
