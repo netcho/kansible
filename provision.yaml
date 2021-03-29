@@ -15,10 +15,12 @@
     kubernetes_node_hosts: []
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
-    - stat:
+    - name: Check if OpenStack credentials exist
+      stat:
         path: "{{ os_config_file_path }}"
       register: os_config_file
-    - include_vars: "{{ os_config_file_path }}"
+    - name: Include OpenStack credentials as variables
+      include_vars: "{{ os_config_file_path }}"
       when: os_config_file.stat.exists and os_config_file.stat.isreg
     - name: Generate nodes keypair
       openstack.cloud.keypair:
@@ -76,7 +78,7 @@
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes_master_volume_size | default('40') }}"
-          with_sequence: start=1 end="{{ kubernetes_master_count + 1}}"
+          with_sequence: start=1 end="{{ kubernetes_master_count + 1 }}"
         - name: Create Kubernetes master instance
           openstack.cloud.server:
             name: "{{ kubernetes_cluster_name + '-kubernetes-master' + item }}"
@@ -93,7 +95,7 @@
             volumes:
               - "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
             userdata: "{{ userdata | to_json }}"
-          with_sequence: start=1 end="{{ kubernetes_master_count + 1}}"
+          with_sequence: start=1 end="{{ kubernetes_master_count + 1 }}"
       vars:
         callback_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits') }}"
     - name: Provision Kubernetes nodes
@@ -105,6 +107,7 @@
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes_node_volume_size | default('40') }}"
+          with_sequence: start=1 end="{{ kubernetes_node_count + 1 }}"
         - name: Create Kubernetes node instance
           openstack.cloud.server:
             name: "{{ kubernetes_cluster_name + '-kubernetes-node' + item }}"
@@ -121,12 +124,13 @@
             volumes:
               - "{{ kubernetes_cluster_name + '-node' + item + '-volume' | to_uuid }}"
             userdata: "{{ kubernetes_node_userdata | to_json }}"
+          with_sequence: start=1 end="{{ kubernetes_node_count + 1 }}"
         - name: Add instance to list
           set_fact:
             kubernetes_node_hosts: "{{ kubernetes_node_hosts + (kubernetes_cluster_name + '-kubernetes-node' + item) }}"
-      with_sequence: start=1 end="{{ kubernetes_node_count + 1}}"
+          with_sequence: start=1 end="{{ kubernetes_node_count + 1 }}"
     - name: Update cluster inventory
-      awx.awx.tower_invetory_source_update:
+      awx.awx.tower_inventory_source_update:
         name: "{{ kubernetes_cluster_name + '-openstack' | to_uuid }}"
         inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
     - name: Create host groups
