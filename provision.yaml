@@ -75,7 +75,7 @@
             description: "{{ kubernetes_cluster_name + ' cluster master deploy job' }}"
             project: KubeSpray
             playbook: cluster.yml
-            inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
+            inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             credentials:
               - "{{ (kubernetes_cluster_name + '-node-keypair') | to_uuid }}"
             host_config_key: "{{ callback_key }}"
