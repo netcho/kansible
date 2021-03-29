@@ -22,6 +22,11 @@
     - name: Include OpenStack credentials as variables
       include_vars: "{{ os_config_file_path }}"
       when: os_config_file.stat.exists and os_config_file.stat.isreg
+    - name: Generate AWX token
+      awx.awx.tower_token:
+        description: "AWX Token for further API calls for cluster {{ kubernetes_cluster_name }}"
+        tower_username: "{{ awx_username }}"
+        tower_password: "{{ awx_password }}"
     - name: Generate nodes keypair
       openstack.cloud.keypair:
         name: "{{ (kubernetes_cluster_name + '-keypair') }}"
@@ -36,7 +41,8 @@
         inputs:
           username: core
           ssh_key_data: "{{ generated_keypair.key.private_key }}"
-        tower_host: https://localhost:80
+        tower_host: http://localhost
+        tower_oauthtoken: "{{ tower_token }}"
     - name: Generate list of keypairs
       set_fact:
         kubernetes_node_keypairs: "{{ kubernetes_node_keypairs + [item.public_key] }}"
@@ -47,6 +53,8 @@
       awx.awx.tower_inventory:
         name: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' cluster inventory' }}"
+        tower_host: http://localhost
+        tower_oauthtoken: "{{ tower_token }}"
     - name: Create OpenStack source
       awx.awx.tower_inventory_source:
         name: "{{ kubernetes_cluster_name + '-openstack' | to_uuid }}"
@@ -54,6 +62,8 @@
         inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
         source: openstack
         credential: MafiaRPG OpenStack
+        tower_host: http://localhost
+        tower_oauthtoken: "{{ tower_token }}"
     - block:
         - name: Create master provision job template
           awx.awx.tower_job_template:
