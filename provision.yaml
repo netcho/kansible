@@ -34,23 +34,23 @@
       openstack.cloud.keypair:
         name: "{{ (kubernetes_cluster_name + '-keypair') }}"
         auth: "{{ clouds.devstack.auth }}"
-      register: generated_keypair
+      register: nova_keypair
     - name: Create nodes credential
       awx.awx.tower_credential:
         name: "{{ kubernetes_cluster_name + '-node-keypair' | to_uuid }}"
-        description: "{{ kubernetes_cluster_name + 'Node SSH Credential' }}"
+        description: "{{ kubernetes_cluster_name + ' Node SSH Credential' }}"
         organization: MafiaRPG
         credential_type: ssh
         inputs:
           username: core
-          ssh_key_data: "{{ generated_keypair.key.private_key }}"
+          ssh_key_data: "{{ nova_keypair.key.private_key }}"
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Generate list of keypairs
       set_fact:
         kubernetes_node_keypairs: "{{ kubernetes_node_keypairs + [item.public_key] }}"
       with_items:
-        - "{{ generated_keypair.key }}"
+        - "{{ nova_keypair.key }}"
         - "{{ ssh_keypair }}"
     - name: Create cluster inventory
       awx.awx.tower_inventory:
