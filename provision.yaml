@@ -40,7 +40,7 @@
         name: "{{ kubernetes_cluster_name + '-node-keypair' | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' Node SSH Credential' }}"
         organization: MafiaRPG
-        credential_type: ssh
+        kind: ssh
         inputs:
           username: core
           ssh_key_data: "{{ nova_keypair.key.private_key }}"

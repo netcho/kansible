@@ -1,4 +1,5 @@
 ---
 collections:
-- openstack.cloud
-- awx.awx
+- name: openstack.cloud
+- name: awx.awx
+  version: 17.1.0
