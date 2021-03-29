@@ -32,10 +32,11 @@
         name: "{{ kubernetes_cluster_name + '-node-keypair' | to_uuid }}"
         description: "{{ kubernetes_cluster_name + 'Node SSH Credential' }}"
         organization: MafiaRPG
-        kind: ssh
+        credential_type: ssh
         inputs:
           username: core
           ssh_key_data: "{{ generated_keypair.key.private_key }}"
+        tower_host: https://localhost:80
     - name: Generate list of keypairs
       set_fact:
         kubernetes_node_keypairs: "{{ kubernetes_node_keypairs + [item.public_key] }}"
