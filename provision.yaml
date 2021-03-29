@@ -14,6 +14,7 @@
     kubernetes_node_flavor_name: "m1.medium"
     kubernetes_node_hosts: []
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
+    awx_address: "http://localhost"
   tasks:
     - name: Check if OpenStack credentials exist
       stat:
@@ -25,7 +26,7 @@
     - name: Generate AWX token
       awx.awx.tower_token:
         description: "AWX Token for further API calls for cluster {{ kubernetes_cluster_name }}"
-        tower_host: http://localhost
+        tower_host: "{{ awx_address }}"
         tower_username: "{{ awx_username }}"
         tower_password: "{{ awx_password }}"
     - name: Generate nodes keypair
@@ -42,7 +43,7 @@
         inputs:
           username: core
           ssh_key_data: "{{ generated_keypair.key.private_key }}"
-        tower_host: http://localhost
+        tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Generate list of keypairs
       set_fact:
@@ -54,7 +55,7 @@
       awx.awx.tower_inventory:
         name: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' cluster inventory' }}"
-        tower_host: http://localhost
+        tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create OpenStack source
       awx.awx.tower_inventory_source:
@@ -63,7 +64,7 @@
         inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
         source: openstack
         credential: MafiaRPG OpenStack
-        tower_host: http://localhost
+        tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - block:
         - name: Create master provision job template
@@ -76,6 +77,8 @@
             credentials:
               - "{{ kubernetes_cluster_name + '-node-keypair' | to_uuid }}"
             host_config_key: "{{ callback_key }}"
+            tower_host: "{{ awx_address }}"
+            tower_oauthtoken: "{{ tower_token }}"
           register: job_template_reg
         - name: debug job template
           debug:
@@ -141,37 +144,3 @@
           set_fact:
             kubernetes_node_hosts: "{{ kubernetes_node_hosts + (kubernetes_cluster_name + '-kubernetes-node' + item) }}"
           with_sequence: start=1 end="{{ kubernetes_node_count + 1 }}"
-    - name: Update cluster inventory
-      awx.awx.tower_inventory_source_update:
-        name: "{{ kubernetes_cluster_name + '-openstack' | to_uuid }}"
-        inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
-    - name: Create host groups
-      block:
-        - name: Create masters group
-          awx.awx.tower_group:
-            name: kube-master
-            inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
-            hosts: "{{ kubernetes_master_hosts }}"
-        - name: Create etcd group
-          awx.awx.tower_group:
-            name: etcd
-            inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
-            hosts: "{{ kubernetes_master_hosts }}"
-        - name: Create nodes group
-          awx.awx.tower_group:
-            name: kube-node
-            inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
-            hosts: "{{ kubernetes_node_hosts }}"
-        - name: Create masters group
-          awx.awx.tower_group:
-            name: calico-rr
-            inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
-        - name: Create common group
-          awx.awx.tower_group:
-            name: k8s-cluster
-            children:
-              - kube-master
-              - kube-node
-              - calico-rr
-
-
