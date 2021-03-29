@@ -37,7 +37,7 @@
       register: nova_keypair
     - name: Create nodes credential
       awx.awx.tower_credential:
-        name: "{{ kubernetes_cluster_name + '-node-keypair' | to_uuid }}"
+        name: "{{ (kubernetes_cluster_name + '-node-keypair') | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' Node SSH Credential' }}"
         organization: MafiaRPG
         kind: ssh
@@ -54,16 +54,16 @@
         - "{{ ssh_keypair }}"
     - name: Create cluster inventory
       awx.awx.tower_inventory:
-        name: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
+        name: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' cluster inventory' }}"
         organization: MafiaRPG
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create OpenStack source
       awx.awx.tower_inventory_source:
-        name: "{{ kubernetes_cluster_name + '-openstack' | to_uuid }}"
+        name: "{{ (kubernetes_cluster_name + '-openstack') | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' cluster OpenStack inventory source' }}"
-        inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
+        inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
         source: openstack
         credential: MafiaRPG OpenStack
         tower_host: "{{ awx_address }}"
@@ -71,13 +71,13 @@
     - block:
         - name: Create master provision job template
           awx.awx.tower_job_template:
-            name: "{{ kubernetes_cluster_name + '-master-deploy' | to_uuid }}"
+            name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
             description: "{{ kubernetes_cluster_name + ' cluster master deploy job' }}"
             project: KubeSpray
             playbook: cluster.yml
             inventory: "{{ kubernetes_cluster_name + '-inventory' | to_uuid }}"
             credentials:
-              - "{{ kubernetes_cluster_name + '-node-keypair' | to_uuid }}"
+              - "{{ (kubernetes_cluster_name + '-node-keypair') | to_uuid }}"
             host_config_key: "{{ callback_key }}"
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
@@ -90,7 +90,7 @@
             userdata: "{{ lookup('template', 'userdata/flatcar.j2') }}"
         - name: Create Kubernetes master data volume
           openstack.cloud.volume:
-            name: "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
+            name: "{{ (kubernetes_cluster_name + '-master' + item + '-volume') | to_uuid }}"
             description: "{{ kubernetes_cluster_name + ' cluster master' + item + ' data volume' }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
@@ -110,7 +110,7 @@
               - default
               - Kubernetes Master
             volumes:
-              - "{{ kubernetes_cluster_name + '-master' + item + '-volume' | to_uuid }}"
+              - "{{ (kubernetes_cluster_name + '-master' + item + '-volume') | to_uuid }}"
             userdata: "{{ userdata | to_json }}"
           with_sequence: start=1 end="{{ kubernetes_master_count + 1 }}"
       vars:
