@@ -81,10 +81,7 @@
             host_config_key: "{{ callback_key }}"
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
-          register: job_template_reg
-        - name: debug job template
-          debug:
-            msg: "Job template create result: {{ job_template_reg }}"
+          register: job_template
         - name: Generate Kubernetes node user-data
           set_fact:
             userdata: "{{ lookup('template', 'userdata/flatcar.j2') }}"
@@ -95,7 +92,7 @@
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes_master_volume_size | default('40') }}"
-          with_sequence: start=1 end="{{ kubernetes_master_count + 1 }}"
+          with_sequence: start=1 end="{{ kubernetes_master_count }}"
         - name: Create Kubernetes master instance
           openstack.cloud.server:
             name: "{{ kubernetes_cluster_name + '-kubernetes-master' + item }}"
@@ -112,7 +109,7 @@
             volumes:
               - "{{ (kubernetes_cluster_name + '-master' + item + '-volume') | to_uuid }}"
             userdata: "{{ userdata | to_json }}"
-          with_sequence: start=1 end="{{ kubernetes_master_count + 1 }}"
+          with_sequence: start=1 end="{{ kubernetes_master_count }}"
       vars:
         callback_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits') }}"
     - name: Provision Kubernetes nodes
@@ -124,13 +121,13 @@
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes_node_volume_size | default('40') }}"
-          with_sequence: start=1 end="{{ kubernetes_node_count + 1 }}"
+          with_sequence: start=1 end="{{ kubernetes_node_count }}"
         - name: Create Kubernetes node instance
           openstack.cloud.server:
             name: "{{ kubernetes_cluster_name + '-kubernetes-node' + item }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
-            flavor: "{{ kubernetes_worker_flavor_name }}"
+            flavor: "{{ kubernetes_node_flavor_name }}"
             image: "{{ image }}"
             network: "{{ kubernetes_cluster_network }}"
             floating_ip_pools:
@@ -141,8 +138,8 @@
             volumes:
               - "{{ kubernetes_cluster_name + '-node' + item + '-volume' | to_uuid }}"
             userdata: "{{ kubernetes_node_userdata | to_json }}"
-          with_sequence: start=1 end="{{ kubernetes_node_count + 1 }}"
+          with_sequence: start=1 end="{{ kubernetes_node_count }}"
         - name: Add instance to list
           set_fact:
             kubernetes_node_hosts: "{{ kubernetes_node_hosts + (kubernetes_cluster_name + '-kubernetes-node' + item) }}"
-          with_sequence: start=1 end="{{ kubernetes_node_count + 1 }}"
+          with_sequence: start=1 end="{{ kubernetes_node_count }}"
