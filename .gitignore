@@ -144,3 +144,4 @@ fabric.properties
 ### Ansible template
 *.retry
 
+.cache
