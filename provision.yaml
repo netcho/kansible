@@ -25,6 +25,7 @@
     - name: Generate AWX token
       awx.awx.tower_token:
         description: "AWX Token for further API calls for cluster {{ kubernetes_cluster_name }}"
+        tower_host: http://localhost
         tower_username: "{{ awx_username }}"
         tower_password: "{{ awx_password }}"
     - name: Generate nodes keypair
