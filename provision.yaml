@@ -112,6 +112,13 @@
           with_sequence: start=1 end="{{ kubernetes_master_count }}"
       vars:
         callback_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits') }}"
+    - name: Delete AWX token
+      awx.awx.tower_token:
+        existing_token: "{{ tower_token }}"
+        state: absent
+        tower_host: "{{ awx_address }}"
+        tower_username: "{{ awx_username }}"
+        tower_password: "{{ awx_password }}"
     #- name: Provision Kubernetes nodes
     #  block:
     #    - name: Generate Kubernetes node user-data
