@@ -82,6 +82,9 @@
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
           register: job_template
+        - name: Generate provisioning callback url
+          set_fact:
+            callback_url: "{{ awx_address + '/api/v2/job_templates/' + job_template.id + '/callback/'}}"  
         - name: Generate Kubernetes master user-data
           set_fact:
             userdata: "{{ lookup('template', 'userdata/flatcar.j2') }}"
