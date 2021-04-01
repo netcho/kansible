@@ -82,9 +82,9 @@
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
           register: job_template
-      - name: Get master provision job template id
-        debug:
-          msg: "Job Template ID: {{ query('awx.awx.tower_api', 'job_templates', host=awx_address, oauth_token=tower_token, query_params={ 'name': ((kubernetes_cluster_name + '-master-deploy') | to_uuid )}) }}"
+        - name: Get master provision job template id
+          debug:
+            msg: "Job Template ID: {{ query('awx.awx.tower_api', 'job_templates', host=awx_address, oauth_token=tower_token, query_params={ 'name': ((kubernetes_cluster_name + '-master-deploy') | to_uuid )}) }}"
         #- name: Generate provisioning callback url
         #  set_fact:
         #    callback_url: "{{ awx_address + '/api/v2/job_templates/' + job_template.id + '/callback/'}}"  
