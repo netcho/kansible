@@ -74,25 +74,36 @@
           awx.awx.tower_group:
             name: kube-master
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx_address }}"
+            tower_oauthtoken: "{{ tower_token }}"
         - name: Create etcd group
           awx.awx.tower_group:
             name: etcd
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx_address }}"
+            tower_oauthtoken: "{{ tower_token }}"
         - name: Create nodes group
           awx.awx.tower_group:
             name: kube-node
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx_address }}"
+            tower_oauthtoken: "{{ tower_token }}"
         - name: Create masters group
           awx.awx.tower_group:
             name: calico-rr
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx_address }}"
+            tower_oauthtoken: "{{ tower_token }}"
         - name: Create common group
           awx.awx.tower_group:
             name: k8s-cluster
+            inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             children:
               - kube-master
               - kube-node
               - calico-rr
+            tower_host: "{{ awx_address }}"
+            tower_oauthtoken: "{{ tower_token }}"  
     - block:
         - name: Create master provision job template
           awx.awx.tower_job_template:
