@@ -90,7 +90,7 @@
             name: k8s-cluster
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             children:
-              - kube-master
+              - kube_control_plane
               - kube-node
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
@@ -104,6 +104,7 @@
         source_vars:
           #plugin: openstack
           groups:
+            etcd: "'control_plane' in ( openstack.metadata | map(attribute='kubernetes_role'))"
             kube_control_plane: "'control_plane' in ( openstack.metadata | map(attribute='kubernetes_role'))"
             kube_node: "'node' in ( openstack.metadata | map(attribute='kubernetes_role'))"
         tower_host: "{{ awx_address }}"
