@@ -59,20 +59,11 @@
         organization: MafiaRPG
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
-    - name: Create OpenStack source
-      awx.awx.tower_inventory_source:
-        name: "{{ (kubernetes_cluster_name + '-openstack') | to_uuid }}"
-        description: "{{ kubernetes_cluster_name + ' cluster OpenStack inventory source' }}"
-        inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
-        source: openstack
-        credential: MafiaRPG OpenStack
-        tower_host: "{{ awx_address }}"
-        tower_oauthtoken: "{{ tower_token }}"
     - name: Create host groups
       block:
         - name: Create masters group
           awx.awx.tower_group:
-            name: kube-master
+            name: kube_control_plane
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
@@ -88,7 +79,7 @@
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
-        - name: Create masters group
+        - name: Create calico group
           awx.awx.tower_group:
             name: calico-rr
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
@@ -104,6 +95,20 @@
               - calico-rr
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
+    - name: Create OpenStack source
+      awx.awx.tower_inventory_source:
+        name: "{{ (kubernetes_cluster_name + '-openstack') | to_uuid }}"
+        description: "{{ kubernetes_cluster_name + ' cluster OpenStack inventory source' }}"
+        inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+        credential: MafiaRPG OpenStack
+        source: openstack
+        source_vars:
+          #plugin: openstack
+          groups:
+            kube_control_plane: "'control_plane' in ( openstack.metadata | map(attribute='kubernetes_role'))"
+            kube_node: "'node' in ( openstack.metadata | map(attribute='kubernetes_role'))"
+        tower_host: "{{ awx_address }}"
+        tower_oauthtoken: "{{ tower_token }}"
     - block:
         - name: Create master provision job template
           awx.awx.tower_job_template:
@@ -140,6 +145,8 @@
             flavor: "{{ kubernetes_master_flavor_name }}"
             image: "{{ image }}"
             network: "{{ kubernetes_cluster_network }}"
+            meta:
+              - kubernetes_role: control_plane
             floating_ip_pools:
               - "{{ kubernetes_cluster_floating_ip_network }}"
             security_groups:
