@@ -146,7 +146,7 @@
             image: "{{ image }}"
             network: "{{ kubernetes_cluster_network }}"
             meta:
-              - kubernetes_role: control_plane
+              kubernetes_role: control_plane
             floating_ip_pools:
               - "{{ kubernetes_cluster_floating_ip_network }}"
             security_groups:
