@@ -92,7 +92,6 @@
             children:
               - kube-master
               - kube-node
-              - calico-rr
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
     - name: Create OpenStack source
