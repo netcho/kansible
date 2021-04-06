@@ -102,11 +102,10 @@
         credential: MafiaRPG OpenStack
         source: openstack
         source_vars:
-          #plugin: openstack
           groups:
-            etcd: "'control_plane' in ( openstack.metadata | map(attribute='kubernetes_role'))"
-            kube_control_plane: "'control_plane' in ( openstack.metadata | map(attribute='kubernetes_role'))"
-            kube_node: "'node' in ( openstack.metadata | map(attribute='kubernetes_role'))"
+            etcd: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
+            kube_control_plane: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
+            kube-node: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'node'"
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - block:
