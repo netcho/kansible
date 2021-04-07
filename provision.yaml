@@ -44,6 +44,7 @@
         inputs:
           username: core
           ssh_key_data: "{{ nova_keypair.key.private_key }}"
+        become_method: sudo
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Generate list of keypairs
@@ -118,6 +119,7 @@
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             credentials:
               - "{{ (kubernetes_cluster_name + '-node-keypair') | to_uuid }}"
+            become_enabled: true
             host_config_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits') }}"
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
