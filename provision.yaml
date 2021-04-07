@@ -153,7 +153,7 @@
               - "{{ (kubernetes_cluster_name + '-master' + item + '-volume') | to_uuid }}"
             userdata: "{{ kubernetes_instance_userdata | to_json }}"
           with_sequence: start=1 end="{{ kubernetes_master_count }}"
-    - name: Provision Kubernetes nodes
+    - name: Provision nodes
       block:
         - name: Create Kubernetes node data volume
           openstack.cloud.volume:
@@ -171,6 +171,8 @@
             flavor: "{{ kubernetes_node_flavor_name }}"
             image: "{{ image }}"
             network: "{{ kubernetes_cluster_network }}"
+            meta:
+              kubernetes_role: node
             floating_ip_pools:
               - "{{ kubernetes_cluster_floating_ip_network }}"
             security_groups:
