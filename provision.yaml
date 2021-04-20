@@ -93,7 +93,6 @@
         source: openstack
         source_vars:
           groups:
-            all: "openstack.metadata.kubernetes_role is defined"
             etcd: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
             kube_control_plane: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
             kube-node: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'node'"
