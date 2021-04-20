@@ -47,6 +47,8 @@
         name: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' cluster inventory' }}"
         organization: MafiaRPG
+        kind: smart
+        host_filter: "openstack.metadata.kubernetes_role is defined"
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create host groups
@@ -179,7 +181,7 @@
         tower_oauthtoken: "{{ tower_token }}"
 
 - name: Wait for nodes to become ready
-  hosts: k8s-cluster
+  hosts: all
   tasks:
     - wait_for_connection:
         delay: 180
