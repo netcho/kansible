@@ -1,20 +1,9 @@
 ---
-- hosts: localhost
+- name: Provision Infrastructure
+  hosts: localhost
   gather_facts: false
   vars:
-    image: "flatcar"
-    kubernetes_cluster_name: "test1"
-    kubernetes_cluster_network: "mafiarpg-default"
-    kubernetes_cluster_floating_ip_network: "provider"
-    kubernetes_node_keypairs: []
-    kubernetes_master_count: 1
-    kubernetes_master_flavor_name: "m1.large"
-    kubernetes_master_hosts: []
-    kubernetes_node_count: 1
-    kubernetes_node_flavor_name: "m1.medium"
-    kubernetes_node_hosts: []
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
-    awx_address: "http://localhost"
   tasks:
     - name: Check if OpenStack credentials exist
       stat:
@@ -104,6 +93,7 @@
         source: openstack
         source_vars:
           groups:
+            all: "openstack.metadata.kubernetes_role is defined"
             etcd: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
             kube_control_plane: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
             kube-node: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'node'"
@@ -189,17 +179,18 @@
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
 
-- hosts: k8s-cluster
+- name: Wait for nodes to become ready
+  hosts: k8s-cluster
   tasks:
-    - name: Wait for nodes to become ready
-      wait_for_connection:
+    - wait_for_connection:
         delay: 180
         connect_timeout: 20
 
-- hosts: localhost
+- name: Run KubeSpray
+  hosts: localhost
   gather_facts: false
   tasks:
-    - name: Launch KubeSpray
+    - name: Launch KubeSpray job
       awx.awx.tower_job_launch:
         name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
         tower_host: "{{ awx_address }}"

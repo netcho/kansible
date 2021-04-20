@@ -1,0 +1,11 @@
+---
+image: "flatcar"
+kubernetes_cluster_name: "test1"
+kubernetes_cluster_network: "mafiarpg-default"
+kubernetes_cluster_floating_ip_network: "provider"
+kubernetes_node_keypairs: []
+kubernetes_master_count: 1
+kubernetes_master_flavor_name: "m1.large"
+kubernetes_node_count: 1
+kubernetes_node_flavor_name: "m1.medium"
+awx_address: "http://localhost"
