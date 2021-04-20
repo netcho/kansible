@@ -188,6 +188,17 @@
         inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
+
+- hosts: k8s-cluster
+  tasks:
+    - name: Wait for nodes to become ready
+      wait_for_connection:
+        delay: 180
+        connect_timeout: 20
+
+- hosts: localhost
+  gather_facts: false
+  tasks:
     - name: Launch KubeSpray
       awx.awx.tower_job_launch:
         name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
