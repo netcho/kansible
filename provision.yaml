@@ -65,7 +65,7 @@
             tower_oauthtoken: "{{ tower_token }}"
         - name: Create nodes group
           awx.awx.tower_group:
-            name: kube-node
+            name: kube_node
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
@@ -81,7 +81,7 @@
             inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
             children:
               - kube_control_plane
-              - kube-node
+              - kube_node
             tower_host: "{{ awx_address }}"
             tower_oauthtoken: "{{ tower_token }}"
     - name: Create OpenStack source
