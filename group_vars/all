@@ -8,4 +8,5 @@ kubernetes_master_count: 1
 kubernetes_master_flavor_name: "m1.large"
 kubernetes_node_count: 1
 kubernetes_node_flavor_name: "m1.medium"
+kubernetes_instance_initial_timeout: 60
 awx_address: "http://localhost"

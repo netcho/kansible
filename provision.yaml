@@ -184,7 +184,7 @@
   hosts: all
   tasks:
     - wait_for_connection:
-        delay: 180
+        delay: "{{ kubernetes_instance_initial_timeout }}"
         connect_timeout: 20
 
 - name: Run KubeSpray
