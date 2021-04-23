@@ -48,7 +48,7 @@
         description: "{{ kubernetes_cluster_name + ' cluster inventory' }}"
         organization: MafiaRPG
         kind: smart
-        #host_filter: "openstack.metadata.kubernetes_role is defined"
+        host_filter: "variables__icontains={{ kubernetes_cluster_name }}"
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create host groups
