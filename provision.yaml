@@ -95,9 +95,9 @@
         source: openstack
         source_vars:
           groups:
-            etcd: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
-            kube_control_plane: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'control_plane'"
-            kube-node: "openstack.metadata.kubernetes_role is defined and openstack.metadata.kubernetes_role == 'node'"
+            etcd: "openstack.metadata.kubernetes_cluster_role is defined and openstack.metadata.kubernetes_cluster_role == 'control_plane'"
+            kube_control_plane: "openstack.metadata.kubernetes_cluster_role is defined and openstack.metadata.kubernetes_cluster_role == 'control_plane'"
+            kube_node: "openstack.metadata.kubernetes_cluster_role is defined and openstack.metadata.kubernetes_cluster_role == 'node'"
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create KubeSpray job template
@@ -134,7 +134,8 @@
             image: "{{ image }}"
             network: "{{ kubernetes_cluster_network }}"
             meta:
-              kubernetes_role: control_plane
+              kubernetes_cluster_name: "{{ kubernetes_cluster_name }}"
+              kubernetes_cluster_role: control_plane
             floating_ip_pools:
               - "{{ kubernetes_cluster_floating_ip_network }}"
             security_groups:
@@ -163,7 +164,8 @@
             image: "{{ image }}"
             network: "{{ kubernetes_cluster_network }}"
             meta:
-              kubernetes_role: node
+              kubernetes_cluster_name: "{{ kubernetes_cluster_name }}"
+              kubernetes_cluster_role: node
             floating_ip_pools:
               - "{{ kubernetes_cluster_floating_ip_network }}"
             security_groups:
