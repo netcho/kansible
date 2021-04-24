@@ -14,27 +14,27 @@
       when: os_config_file.stat.exists and os_config_file.stat.isreg
     - name: Generate AWX token
       awx.awx.tower_token:
-        description: "AWX Token for further API calls for cluster {{ kubernetes_cluster_name }}"
+        description: "AWX Token for further API calls for cluster {{ kubernetes.cluster.name }}"
         application: Kansible
-        tower_host: "{{ awx_address }}"
-        tower_username: "{{ awx_username }}"
-        tower_password: "{{ awx_password }}"
+        tower_host: "{{ awx.address }}"
+        tower_username: "{{ awx.username }}"
+        tower_password: "{{ awx.password }}"
     - name: Generate nodes keypair
       openstack.cloud.keypair:
-        name: "{{ (kubernetes_cluster_name + '-keypair') }}"
+        name: "{{ (kubernetes.cluster.name + '-keypair') }}"
         auth: "{{ clouds.devstack.auth }}"
       register: nova_keypair
     - name: Create nodes credential
       awx.awx.tower_credential:
-        name: "{{ (kubernetes_cluster_name + '-node-keypair') | to_uuid }}"
-        description: "{{ kubernetes_cluster_name + ' Node SSH Credential' }}"
+        name: "{{ (kubernetes.cluster.name + '-node-keypair') | to_uuid }}"
+        description: "{{ kubernetes.cluster.name + ' Node SSH Credential' }}"
         organization: MafiaRPG
         kind: ssh
         inputs:
           username: core
           ssh_key_data: "{{ nova_keypair.key.private_key }}"
         become_method: sudo
-        tower_host: "{{ awx_address }}"
+        tower_host: "{{ awx.address }}"
         tower_oauthtoken: "{{ tower_token }}"
       when: nova_keypair.key.private_key
     - name: Generate list of keypairs
@@ -45,51 +45,51 @@
         - "{{ ssh_keypair }}"
     - name: Create cluster inventory
       awx.awx.tower_inventory:
-        name: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
-        description: "{{ kubernetes_cluster_name + ' cluster inventory' }}"
+        name: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
+        description: "{{ kubernetes.cluster.name + ' cluster inventory' }}"
         organization: MafiaRPG
-        tower_host: "{{ awx_address }}"
+        tower_host: "{{ awx.address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create host groups
       block:
         - name: Create masters group
           awx.awx.tower_group:
             name: kube_control_plane
-            inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
-            tower_host: "{{ awx_address }}"
+            inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx.address }}"
             tower_oauthtoken: "{{ tower_token }}"
         - name: Create etcd group
           awx.awx.tower_group:
             name: etcd
-            inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
-            tower_host: "{{ awx_address }}"
+            inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx.address }}"
             tower_oauthtoken: "{{ tower_token }}"
         - name: Create nodes group
           awx.awx.tower_group:
             name: kube_node
-            inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
-            tower_host: "{{ awx_address }}"
+            inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx.address }}"
             tower_oauthtoken: "{{ tower_token }}"
         - name: Create calico group
           awx.awx.tower_group:
             name: calico-rr
-            inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
-            tower_host: "{{ awx_address }}"
+            inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
+            tower_host: "{{ awx.address }}"
             tower_oauthtoken: "{{ tower_token }}"
         - name: Create common group
           awx.awx.tower_group:
             name: k8s-cluster
-            inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+            inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
             children:
               - kube_control_plane
               - kube_node
-            tower_host: "{{ awx_address }}"
+            tower_host: "{{ awx.address }}"
             tower_oauthtoken: "{{ tower_token }}"
     - name: Create OpenStack source
       awx.awx.tower_inventory_source:
-        name: "{{ (kubernetes_cluster_name + '-openstack') | to_uuid }}"
-        description: "{{ kubernetes_cluster_name + ' cluster OpenStack inventory source' }}"
-        inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+        name: "{{ (kubernetes.cluster.name + '-openstack') | to_uuid }}"
+        description: "{{ kubernetes.cluster.name + ' cluster OpenStack inventory source' }}"
+        inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
         credential: MafiaRPG OpenStack
         source: openstack
         source_vars:
@@ -97,19 +97,19 @@
             etcd: "openstack.metadata.kubernetes_cluster_role is defined and openstack.metadata.kubernetes_cluster_role == 'control_plane'"
             kube_control_plane: "openstack.metadata.kubernetes_cluster_role is defined and openstack.metadata.kubernetes_cluster_role == 'control_plane'"
             kube_node: "openstack.metadata.kubernetes_cluster_role is defined and openstack.metadata.kubernetes_cluster_role == 'node'"
-        tower_host: "{{ awx_address }}"
+        tower_host: "{{ awx.address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create KubeSpray job template
       vars:
         openstack_auth: "{{ clouds.devstack.auth }}"
       awx.awx.tower_job_template:
-        name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
-        description: "{{ kubernetes_cluster_name + ' cluster KubeSpray job' }}"
+        name: "{{ (kubernetes.cluster.name + '-master-deploy') | to_uuid }}"
+        description: "{{ kubernetes.cluster.name + ' cluster KubeSpray job' }}"
         project: KubeSpray
         playbook: cluster.yml
-        inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
+        inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
         credentials:
-          - "{{ (kubernetes_cluster_name + '-node-keypair') | to_uuid }}"
+          - "{{ (kubernetes.cluster.name + '-node-keypair') | to_uuid }}"
         extra_vars:
           cloud_provider: external
           external_cloud_provider: openstack
@@ -118,15 +118,15 @@
           external_openstack_tenant_name: "{{ openstack_auth.project_name }}"
           external_openstack_username: "{{ openstack_auth.username }}"
           external_openstack_password: "{{ openstack_auth.password }}"
-          external_openstack_lbaas_network_id: "{{ octavia_vip_network_id }}"
-          external_openstack_lbaas_floating_network_id: "{{ octavia_vip_floating_id }}"
+          external_openstack_lbaas_network_id: "{{ openstack.octavia_vip_network_id }}"
+          external_openstack_lbaas_floating_network_id: "{{ openstack.octavia_floating_network_id }}"
           cinder_csi_enabled: true
           kube_feature_gates:
             - CSIMigration=true
             - CSIMigrationOpenStack=true
             - ExpandCSIVolumes=true
         become_enabled: true
-        tower_host: "{{ awx_address }}"
+        tower_host: "{{ awx.address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Generate Kubernetes instance user-data
       set_fact:
@@ -135,67 +135,67 @@
       block:
         - name: Create Kubernetes master data volume
           openstack.cloud.volume:
-            name: "{{ (kubernetes_cluster_name + '-master' + item + '-volume') | to_uuid }}"
-            description: "{{ kubernetes_cluster_name + ' cluster master ' + item + ' data volume' }}"
+            name: "{{ (kubernetes.cluster.name + '-master' + item + '-volume') | to_uuid }}"
+            description: "{{ kubernetes.cluster.name + ' cluster master ' + item + ' data volume' }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
-            size: "{{ kubernetes_master_volume_size | default('40') }}"
+            size: "{{ kubernetes.master.volume.size | default('40') }}"
           with_sequence: start=1 end="{{ kubernetes_master_count }}"
         - name: Create Kubernetes master instance
           openstack.cloud.server:
-            name: "{{ kubernetes_cluster_name + '-kubernetes-master' + item }}"
+            name: "{{ kubernetes.cluster.name + '-kubernetes-master' + item }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
-            flavor: "{{ kubernetes_master_flavor_name }}"
+            flavor: "{{ kubernetes.master.flavor}}"
             image: "{{ image }}"
-            network: "{{ kubernetes_cluster_network }}"
+            network: "{{ kubernetes.cluster.network }}"
             meta:
-              kubernetes_cluster_name: "{{ kubernetes_cluster_name }}"
+              kubernetes.cluster.name: "{{ kubernetes.cluster.name }}"
               kubernetes_cluster_role: control_plane
             floating_ip_pools:
-              - "{{ kubernetes_cluster_floating_ip_network }}"
+              - "{{ kubernetes.cluster.floating_ip_network }}"
             security_groups:
               - default
               - Kubernetes Master
             volumes:
-              - "{{ (kubernetes_cluster_name + '-master' + item + '-volume') | to_uuid }}"
+              - "{{ (kubernetes.cluster.name + '-master' + item + '-volume') | to_uuid }}"
             userdata: "{{ kubernetes_instance_userdata | to_json }}"
           with_sequence: start=1 end="{{ kubernetes_master_count }}"
     - name: Provision nodes
       block:
         - name: Create Kubernetes node data volume
           openstack.cloud.volume:
-            name: "{{ (kubernetes_cluster_name + '-node' + item + '-volume') | to_uuid }}"
-            description: "{{ kubernetes_cluster_name + ' cluster node ' + item + ' data volume' }}"
+            name: "{{ (kubernetes.cluster.name + '-node' + item + '-volume') | to_uuid }}"
+            description: "{{ kubernetes.cluster.name + ' cluster node ' + item + ' data volume' }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
-            size: "{{ kubernetes_node_volume_size | default('40') }}"
+            size: "{{ kubernetes.node.volume.size | default('40') }}"
           with_sequence: start=1 end="{{ kubernetes_node_count }}"
         - name: Create Kubernetes node instance
           openstack.cloud.server:
-            name: "{{ kubernetes_cluster_name + '-kubernetes-node' + item }}"
+            name: "{{ kubernetes.cluster.name + '-kubernetes-node' + item }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
-            flavor: "{{ kubernetes_node_flavor_name }}"
+            flavor: "{{ kubernetes.node.flavor }}"
             image: "{{ image }}"
-            network: "{{ kubernetes_cluster_network }}"
+            network: "{{ kubernetes.cluster.network }}"
             meta:
-              kubernetes_cluster_name: "{{ kubernetes_cluster_name }}"
+              kubernetes.cluster.name: "{{ kubernetes.cluster.name }}"
               kubernetes_cluster_role: node
             floating_ip_pools:
-              - "{{ kubernetes_cluster_floating_ip_network }}"
+              - "{{ kubernetes.cluster.floating_ip_network }}"
             security_groups:
               - default
               - Kubernetes Node
             volumes:
-              - "{{ (kubernetes_cluster_name + '-node' + item + '-volume') | to_uuid }}"
+              - "{{ (kubernetes.cluster.name + '-node' + item + '-volume') | to_uuid }}"
             userdata: "{{ kubernetes_instance_userdata | to_json }}"
           with_sequence: start=1 end="{{ kubernetes_node_count }}"
     - name: Update cluster inventory
       awx.awx.tower_inventory_source_update:
-        name: "{{ (kubernetes_cluster_name + '-openstack') | to_uuid }}"
-        inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
-        tower_host: "{{ awx_address }}"
+        name: "{{ (kubernetes.cluster.name + '-openstack') | to_uuid }}"
+        inventory: "{{ (kubernetes.cluster.name + '-inventory') | to_uuid }}"
+        tower_host: "{{ awx.address }}"
         tower_oauthtoken: "{{ tower_token }}"
 
 - name: Wait for nodes to become ready
@@ -203,7 +203,7 @@
   gather_facts: false
   tasks:
     - wait_for_connection:
-        delay: "{{ kubernetes_instance_initial_timeout }}"
+        delay: "{{ kansible.instance_initial_timeout }}"
         connect_timeout: 20
 
 - name: Run KubeSpray
@@ -212,13 +212,13 @@
   tasks:
     - name: Launch KubeSpray job
       awx.awx.tower_job_launch:
-        name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
-        tower_host: "{{ awx_address }}"
+        name: "{{ (kubernetes.cluster.name + '-master-deploy') | to_uuid }}"
+        tower_host: "{{ awx.address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Delete AWX token
       awx.awx.tower_token:
         existing_token: "{{ tower_token }}"
         state: absent
-        tower_host: "{{ awx_address }}"
-        tower_username: "{{ awx_username }}"
-        tower_password: "{{ awx_password }}"
+        tower_host: "{{ awx.address }}"
+        tower_username: "{{ awx.username }}"
+        tower_password: "{{ awx.password }}"

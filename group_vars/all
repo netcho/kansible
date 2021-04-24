@@ -1,12 +1,27 @@
 ---
-image: "flatcar"
-kubernetes_cluster_name: "test1"
-kubernetes_cluster_network: "mafiarpg-default"
-kubernetes_cluster_floating_ip_network: "provider"
-kubernetes_node_keypairs: []
-kubernetes_master_count: 1
-kubernetes_master_flavor_name: "m1.large"
-kubernetes_node_count: 1
-kubernetes_node_flavor_name: "m1.medium"
-kubernetes_instance_initial_timeout: 60
-awx_address: "http://localhost"
+kansible:
+  instance_initial_timeout: 60
+
+kubernetes:
+  cluster:
+    name: "test1"
+    network: "mafiarpg-default"
+    floating_ip_network: "provider"
+  master:
+    count: 1
+    flavor: "m1.large"
+    volume:
+      size: 40
+  node:
+    count: 1
+    flavor: "m1.medium"
+    volume:
+      size: 40
+
+awx:
+  address: "http://localhost"
+
+openstack:
+  region: "RegionOne"
+  image: "flatcar"
+  keypair:
