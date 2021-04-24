@@ -36,7 +36,7 @@
         become_method: sudo
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
-      when: not nova_keypair.key.private_key
+      when: nova_keypair.key.private_key
     - name: Generate list of keypairs
       set_fact:
         kubernetes_node_keypairs: "{{ kubernetes_node_keypairs + [item.public_key] }}"
