@@ -2,10 +2,12 @@
 - name: Provision Infrastructure
   hosts: localhost
   gather_facts: false
+  vars:
+    os_config_file_path: lookup('env', 'OS_CLIENT_CONFIG_FILE')
   tasks:
     - name: Check if OpenStack credentials exist
       stat:
-        path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
+        path: "{{ os_config_file_path }}"
       register: os_config_file
     - name: Include OpenStack credentials as variables
       include_vars: "{{ os_config_file_path }}"
