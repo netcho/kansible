@@ -209,11 +209,13 @@
           external_openstack_tenant_name: "{{ openstack_auth.project_name }}"
           external_openstack_username: "{{ openstack_auth.username }}"
           external_openstack_password: "{{ openstack_auth.password }}"
+          external_openstack_lbaas_network_id: "{{ octavia_vip_network_id }}"
+          external_openstack_lbaas_floating_network_id: "{{ octavia_vip_floating_id }}"
+          cinder_csi_enabled: true
           kube_feature_gates:
             - CSIMigration=true
             - CSIMigrationOpenStack=true
             - ExpandCSIVolumes=true
-
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Delete AWX token
