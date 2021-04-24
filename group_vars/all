@@ -25,3 +25,6 @@ openstack:
   region: "RegionOne"
   image: "flatcar"
   keypair:
+  octavia:
+    vip_network_id:
+    floating_network_id:

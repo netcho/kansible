@@ -118,8 +118,9 @@
           external_openstack_tenant_name: "{{ openstack_auth.project_name }}"
           external_openstack_username: "{{ openstack_auth.username }}"
           external_openstack_password: "{{ openstack_auth.password }}"
-          external_openstack_lbaas_network_id: "{{ openstack.octavia_vip_network_id }}"
-          external_openstack_lbaas_floating_network_id: "{{ openstack.octavia_floating_network_id }}"
+          external_openstack_region: "{{ openstack.region }}"
+          external_openstack_lbaas_network_id: "{{ openstack.octavia.vip_network_id }}"
+          external_openstack_lbaas_floating_network_id: "{{ openstack.octavia.floating_network_id }}"
           cinder_csi_enabled: true
           kube_feature_gates:
             - CSIMigration=true
@@ -140,7 +141,7 @@
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes.master.volume.size | default('40') }}"
-          with_sequence: start=1 end="{{ kubernetes_master_count }}"
+          with_sequence: start=1 end="{{ kubernetes.master.count }}"
         - name: Create Kubernetes master instance
           openstack.cloud.server:
             name: "{{ kubernetes.cluster.name + '-kubernetes-master' + item }}"
@@ -160,7 +161,7 @@
             volumes:
               - "{{ (kubernetes.cluster.name + '-master' + item + '-volume') | to_uuid }}"
             userdata: "{{ kubernetes_instance_userdata | to_json }}"
-          with_sequence: start=1 end="{{ kubernetes_master_count }}"
+          with_sequence: start=1 end="{{ kubernetes.master.count }}"
     - name: Provision nodes
       block:
         - name: Create Kubernetes node data volume
@@ -170,7 +171,7 @@
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes.node.volume.size | default('40') }}"
-          with_sequence: start=1 end="{{ kubernetes_node_count }}"
+          with_sequence: start=1 end="{{ kubernetes.node.count }}"
         - name: Create Kubernetes node instance
           openstack.cloud.server:
             name: "{{ kubernetes.cluster.name + '-kubernetes-node' + item }}"
@@ -190,7 +191,7 @@
             volumes:
               - "{{ (kubernetes.cluster.name + '-node' + item + '-volume') | to_uuid }}"
             userdata: "{{ kubernetes_instance_userdata | to_json }}"
-          with_sequence: start=1 end="{{ kubernetes_node_count }}"
+          with_sequence: start=1 end="{{ kubernetes.node.count }}"
     - name: Update cluster inventory
       awx.awx.tower_inventory_source_update:
         name: "{{ (kubernetes.cluster.name + '-openstack') | to_uuid }}"
