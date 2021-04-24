@@ -99,6 +99,8 @@
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Create KubeSpray job template
+      vars:
+        openstack_auth: "{{ clouds.devstack.auth }}"
       awx.awx.tower_job_template:
         name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
         description: "{{ kubernetes_cluster_name + ' cluster KubeSpray job' }}"
@@ -208,8 +210,6 @@
   gather_facts: false
   tasks:
     - name: Launch KubeSpray job
-      vars:
-        openstack_auth: "{{ clouds.devstack.auth }}"
       awx.awx.tower_job_launch:
         name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
         tower_host: "{{ awx_address }}"
