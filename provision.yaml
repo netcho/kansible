@@ -107,6 +107,21 @@
         inventory: "{{ (kubernetes_cluster_name + '-inventory') | to_uuid }}"
         credentials:
           - "{{ (kubernetes_cluster_name + '-node-keypair') | to_uuid }}"
+        extra_vars:
+          cloud_provider: external
+          external_cloud_provider: openstack
+          external_openstack_auth_url: "{{ openstack_auth.auth_url }}"
+          external_openstack_domain_name: "{{ openstack_auth.project_domain_name }}"
+          external_openstack_tenant_name: "{{ openstack_auth.project_name }}"
+          external_openstack_username: "{{ openstack_auth.username }}"
+          external_openstack_password: "{{ openstack_auth.password }}"
+          external_openstack_lbaas_network_id: "{{ octavia_vip_network_id }}"
+          external_openstack_lbaas_floating_network_id: "{{ octavia_vip_floating_id }}"
+          cinder_csi_enabled: true
+          kube_feature_gates:
+            - CSIMigration=true
+            - CSIMigrationOpenStack=true
+            - ExpandCSIVolumes=true
         become_enabled: true
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
@@ -191,10 +206,12 @@
 - name: Run KubeSpray
   hosts: localhost
   gather_facts: false
+  vars:
+    os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
     - name: Check if OpenStack credentials exist
       stat:
-        path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
+        path: "{{ os_config_file_path }}"
       register: os_config_file
     - name: Include OpenStack credentials as variables
       include_vars: "{{ os_config_file_path }}"
@@ -203,21 +220,6 @@
         openstack_auth: "{{ clouds.devstack.auth }}"
       awx.awx.tower_job_launch:
         name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
-        extra_vars:
-          cloud_provider: external
-          external_cloud_provider: openstack
-          external_openstack_auth_url: "{{ openstack_auth.auth_url }}"
-          external_openstack_domain_name: "{{ openstack_auth.project_domain_name }}"
-          external_openstack_tenant_name: "{{ openstack_auth.project_name }}"
-          external_openstack_username: "{{ openstack_auth.username }}"
-          external_openstack_password: "{{ openstack_auth.password }}"
-          external_openstack_lbaas_network_id: "{{ octavia_vip_network_id }}"
-          external_openstack_lbaas_floating_network_id: "{{ octavia_vip_floating_id }}"
-          cinder_csi_enabled: true
-          kube_feature_gates:
-            - CSIMigration=true
-            - CSIMigrationOpenStack=true
-            - ExpandCSIVolumes=true
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Delete AWX token
