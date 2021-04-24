@@ -4,6 +4,7 @@
   gather_facts: false
   vars:
     os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
+    kansible_node_keypairs: []
   tasks:
     - name: Check if OpenStack credentials exist
       stat:
@@ -39,7 +40,7 @@
       when: nova_keypair.key.private_key
     - name: Generate list of keypairs
       set_fact:
-        kubernetes_node_keypairs: "{{ kubernetes_node_keypairs + [item.public_key] }}"
+        kansible_node_keypairs: "{{ kansible_node_keypairs + [item.public_key] }}"
       with_items:
         - "{{ nova_keypair.key }}"
         - "{{ ssh_keypair }}"
@@ -204,7 +205,7 @@
   gather_facts: false
   tasks:
     - wait_for_connection:
-        delay: "{{ kansible.instance_initial_timeout }}"
+        delay: "{{ kansible.instance.initial_timeout }}"
         connect_timeout: 20
 
 - name: Run KubeSpray

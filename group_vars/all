@@ -1,6 +1,7 @@
 ---
 kansible:
-  instance_initial_timeout: 60
+  instance:
+    initial_timeout: 60
 
 kubernetes:
   cluster:
@@ -24,7 +25,6 @@ awx:
 openstack:
   region: "RegionOne"
   image: "flatcar"
-  keypair:
   octavia:
     vip_network_id:
     floating_network_id:
