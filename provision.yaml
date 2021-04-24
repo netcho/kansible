@@ -2,12 +2,10 @@
 - name: Provision Infrastructure
   hosts: localhost
   gather_facts: false
-  vars:
-    os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
     - name: Check if OpenStack credentials exist
       stat:
-        path: "{{ os_config_file_path }}"
+        path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
       register: os_config_file
     - name: Include OpenStack credentials as variables
       include_vars: "{{ os_config_file_path }}"
@@ -182,6 +180,7 @@
 
 - name: Wait for nodes to become ready
   hosts: all
+  gather_facts: false
   tasks:
     - wait_for_connection:
         delay: "{{ kubernetes_instance_initial_timeout }}"
@@ -191,9 +190,30 @@
   hosts: localhost
   gather_facts: false
   tasks:
+    - name: Check if OpenStack credentials exist
+      stat:
+        path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
+      register: os_config_file
+    - name: Include OpenStack credentials as variables
+      include_vars: "{{ os_config_file_path }}"
     - name: Launch KubeSpray job
+      vars:
+        openstack_auth: "{{ clouds.devstack.auth }}"
       awx.awx.tower_job_launch:
         name: "{{ (kubernetes_cluster_name + '-master-deploy') | to_uuid }}"
+        extra_vars:
+          cloud_provider: external
+          external_cloud_provider: openstack
+          external_openstack_auth_url: "{{ openstack_auth.auth_url }}"
+          external_openstack_domain_name: "{{ openstack_auth.project_domain_name }}"
+          external_openstack_tenant_name: "{{ openstack_auth.project_name }}"
+          external_openstack_username: "{{ openstack_auth.username }}"
+          external_openstack_password: "{{ openstack_auth.password }}"
+          kube_feature_gates:
+            - CSIMigration=true
+            - CSIMigrationOpenStack=true
+            - ExpandCSIVolumes=true
+
         tower_host: "{{ awx_address }}"
         tower_oauthtoken: "{{ tower_token }}"
     - name: Delete AWX token
