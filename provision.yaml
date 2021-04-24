@@ -135,7 +135,7 @@
         - name: Create Kubernetes master data volume
           openstack.cloud.volume:
             name: "{{ (kubernetes_cluster_name + '-master' + item + '-volume') | to_uuid }}"
-            description: "{{ kubernetes_cluster_name + ' cluster master' + item + ' data volume' }}"
+            description: "{{ kubernetes_cluster_name + ' cluster master ' + item + ' data volume' }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes_master_volume_size | default('40') }}"
@@ -165,7 +165,7 @@
         - name: Create Kubernetes node data volume
           openstack.cloud.volume:
             name: "{{ (kubernetes_cluster_name + '-node' + item + '-volume') | to_uuid }}"
-            description: "{{ kubernetes_cluster_name + ' cluster node' + item + ' data volume' }}"
+            description: "{{ kubernetes_cluster_name + ' cluster node ' + item + ' data volume' }}"
             state: present
             auth: "{{ clouds.devstack.auth }}"
             size: "{{ kubernetes_node_volume_size | default('40') }}"
