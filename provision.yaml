@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    os_config_file_path: lookup('env', 'OS_CLIENT_CONFIG_FILE')
+    os_config_file_path: "{{ lookup('env', 'OS_CLIENT_CONFIG_FILE') }}"
   tasks:
     - name: Check if OpenStack credentials exist
       stat:
