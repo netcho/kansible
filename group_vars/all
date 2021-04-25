@@ -25,5 +25,6 @@ awx:
 openstack:
   region: "RegionOne"
   image: "flatcar"
-  octavia_vip_network_id:
-  octavia_floating_network_id:
+  octavia:
+    vip_network_id:
+    floating_network_id:
