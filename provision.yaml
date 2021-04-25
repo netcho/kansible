@@ -100,6 +100,9 @@
             kube_node: "openstack.metadata.kubernetes_cluster_role is defined and openstack.metadata.kubernetes_cluster_role == 'node'"
         tower_host: "{{ awx.address }}"
         tower_oauthtoken: "{{ tower_token }}"
+    - name: Debug openstack
+      debug:
+        var: openstack
     - name: Create KubeSpray job template
       vars:
         openstack_auth: "{{ clouds.devstack.auth }}"
